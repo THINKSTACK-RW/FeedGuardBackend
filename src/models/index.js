@@ -25,6 +25,7 @@ db.Question = require("./Question")(sequelize, Sequelize);
 db.QuestionLogic = require("./QuestionLogic")(sequelize, Sequelize);
 db.Response = require("./Response")(sequelize, Sequelize);
 db.Answer = require("./Answer")(sequelize, Sequelize);
+db.Alert = require("./Alert")(sequelize, Sequelize);
 
 /* Relationships */
 
@@ -62,5 +63,9 @@ db.Response.hasMany(db.Answer, { foreignKey: "response_id" });
 // Answers
 db.Answer.belongsTo(db.Response, { foreignKey: "response_id" });
 db.Answer.belongsTo(db.Question, { foreignKey: "question_id" });
+
+// Alerts
+db.Location.hasMany(db.Alert, { foreignKey: "region_id" });
+db.Alert.belongsTo(db.Location, { foreignKey: "region_id" });
 
 module.exports = db;

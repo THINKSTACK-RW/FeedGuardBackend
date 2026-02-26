@@ -38,13 +38,13 @@ async function startServer() {
     console.log('Database connection has been established successfully.');
     
     // Sync database models (in production, use migrations instead)
-    await sequelize.sync({ alter: false });
+    await sequelize.sync({ force: false });
     console.log('Database synchronized successfully.');
     
     // Start server
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
-      console.log(`API documentation available at http://localhost:${PORT}/api`);
+      console.log(`API documentation available at http://localhost:${PORT}/api/api-docs`);
     });
   } catch (error) {
     console.error('Unable to start server:', error);

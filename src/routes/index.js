@@ -12,7 +12,16 @@ const responseRoutes = require('./responseRoutes');
 const surveyRoutes = require('./surveyRoutes');
 const userRoutes = require('./userRoutes');
 
-// Mount routes
+// New routes for enhanced functionality
+const dashboardRoutes = require('./dashboardRoutes');
+const alertsRoutes = require('./alertsRoutes');
+const reportsRoutes = require('./reportsRoutes');
+const mapRoutes = require('./mapRoutes');
+const foodReportRoutes = require('./foodReportRoutes');
+const smsRoutes = require('./smsRoutes');
+const apiDocsRoutes = require('./apiDocsRoutes');
+
+// Mount existing routes
 router.use('/auth', authRoutes);
 router.use('/answers', answerRoutes);
 router.use('/citizens', citizenRoutes);
@@ -22,5 +31,18 @@ router.use('/question-logic', questionLogicRoutes);
 router.use('/responses', responseRoutes);
 router.use('/surveys', surveyRoutes);
 router.use('/users', userRoutes);
+
+// Mount new routes
+router.use('/dashboard', dashboardRoutes);
+router.use('/alerts', alertsRoutes);
+router.use('/reports', reportsRoutes);
+router.use('/map', mapRoutes);
+router.use('/food-reports', foodReportRoutes);
+router.use('/sms', smsRoutes);
+
+// Mount API docs route at root level
+router.use('/api-docs', apiDocsRoutes);
+
+
 
 module.exports = router;

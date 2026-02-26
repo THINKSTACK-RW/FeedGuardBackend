@@ -4,6 +4,7 @@
   "description": "backend for feedguard",
   "main": "index.js",
   "scripts": {
+    "setup": "node scripts/setup-env.js",
     "start": "node src/index.js",
     "dev": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,6 +15,7 @@
   "author": "NSHUTI Mulindwa Christian",
   "license": "ISC",
   "dependencies": {
+    "africastalking": "^0.6.7",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",
