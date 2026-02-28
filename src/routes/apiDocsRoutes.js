@@ -695,6 +695,151 @@ const apiDocumentation = {
       ]
     },
     {
+      name: "Users",
+      icon: "👥",
+      description: "User management and administration (requires authentication)",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/users",
+          description: "Get all users (admin only)",
+          parameters: [],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Users retrieved successfully",
+              example: [
+                {
+                  id: "user-uuid-123",
+                  name: "John Doe",
+                  email: "john@example.com",
+                  role: "MINISTRY",
+                  created_at: "2026-01-01T10:00:00Z"
+                },
+                {
+                  id: "user-uuid-456",
+                  name: "Jane Smith",
+                  email: "jane@example.com",
+                  role: "ADMIN",
+                  created_at: "2026-01-02T11:00:00Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          method: "GET",
+          path: "/users/:id",
+          description: "Get user by ID (admin only or own profile)",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "User UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "User retrieved successfully",
+              example: {
+                id: "user-uuid-123",
+                name: "John Doe",
+                email: "john@example.com",
+                role: "MINISTRY",
+                created_at: "2026-01-01T10:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "POST",
+          path: "/users",
+          description: "Create new user (admin only)",
+          parameters: [],
+          requestBody: {
+            description: "New user data",
+            required: true,
+            example: {
+              name: "New User",
+              email: "newuser@example.com",
+              password: "securePassword123",
+              role: "FIELD_OFFICER"
+            }
+          },
+          responses: {
+            201: {
+              description: "User created successfully",
+              example: {
+                id: "new-user-uuid",
+                name: "New User",
+                email: "newuser@example.com",
+                role: "FIELD_OFFICER",
+                created_at: "2026-01-15T14:30:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "PUT",
+          path: "/users/:id",
+          description: "Update user (admin only or own profile)",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "User UUID"
+            }
+          ],
+          requestBody: {
+            description: "Updated user data",
+            required: true,
+            example: {
+              name: "Updated Name",
+              email: "updated@example.com",
+              role: "SUPERVISOR"
+            }
+          },
+          responses: {
+            200: {
+              description: "User updated successfully",
+              example: {
+                id: "user-uuid-123",
+                name: "Updated Name",
+                email: "updated@example.com",
+                role: "SUPERVISOR",
+                created_at: "2026-01-01T10:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "DELETE",
+          path: "/users/:id",
+          description: "Delete user (admin only)",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "User UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "User deleted successfully",
+              example: {
+                message: "User deleted successfully"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       name: "Authentication",
       icon: "🔐",
       description: "User registration, login, and profile management",
