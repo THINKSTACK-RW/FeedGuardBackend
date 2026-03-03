@@ -952,6 +952,714 @@ const apiDocumentation = {
               }
             }
           }
+        },
+        {
+          method: "PUT",
+          path: "/auth/change-password",
+          description: "Change user password (authenticated)",
+          parameters: [],
+          requestBody: {
+            description: "Password change data",
+            required: true,
+            example: {
+              currentPassword: "oldPassword123",
+              newPassword: "newPassword456"
+            }
+          },
+          responses: {
+            200: {
+              description: "Password changed successfully",
+              example: {
+                message: "Password changed successfully"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      name: "Citizens",
+      icon: "👨‍👩‍👧‍👦",
+      description: "Citizen management and demographic data",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/citizens",
+          description: "Get all citizens",
+          parameters: [],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Citizens retrieved successfully",
+              example: [
+                {
+                  id: "citizen-uuid-123",
+                  name: "John Doe",
+                  phone: "+250788123456",
+                  location_id: "location-uuid-456",
+                  created_at: "2026-01-01T10:00:00Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          method: "GET",
+          path: "/citizens/:id",
+          description: "Get citizen by ID",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Citizen UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Citizen retrieved successfully",
+              example: {
+                id: "citizen-uuid-123",
+                name: "John Doe",
+                phone: "+250788123456",
+                location_id: "location-uuid-456",
+                created_at: "2026-01-01T10:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "POST",
+          path: "/citizens",
+          description: "Create new citizen",
+          parameters: [],
+          requestBody: {
+            description: "Citizen data",
+            required: true,
+            example: {
+              name: "Jane Smith",
+              phone: "+250788123457",
+              location_id: "location-uuid-456"
+            }
+          },
+          responses: {
+            201: {
+              description: "Citizen created successfully",
+              example: {
+                id: "new-citizen-uuid",
+                name: "Jane Smith",
+                phone: "+250788123457",
+                location_id: "location-uuid-456",
+                created_at: "2026-01-15T14:30:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "PUT",
+          path: "/citizens/:id",
+          description: "Update citizen",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Citizen UUID"
+            }
+          ],
+          requestBody: {
+            description: "Updated citizen data",
+            required: true,
+            example: {
+              name: "Updated Name",
+              phone: "+250788123458"
+            }
+          },
+          responses: {
+            200: {
+              description: "Citizen updated successfully",
+              example: {
+                id: "citizen-uuid-123",
+                name: "Updated Name",
+                phone: "+250788123458",
+                location_id: "location-uuid-456",
+                created_at: "2026-01-01T10:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "DELETE",
+          path: "/citizens/:id",
+          description: "Delete citizen",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Citizen UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Citizen deleted successfully",
+              example: {
+                message: "Citizen deleted successfully"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      name: "Questions",
+      icon: "❓",
+      description: "Survey question management",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/questions",
+          description: "Get all questions",
+          parameters: [],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Questions retrieved successfully",
+              example: [
+                {
+                  id: "question-uuid-123",
+                  text: "How many meals did your household eat yesterday?",
+                  type: "meals_per_day",
+                  order_index: 1,
+                  required: true
+                }
+              ]
+            }
+          }
+        },
+        {
+          method: "GET",
+          path: "/questions/:id",
+          description: "Get question by ID",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Question UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Question retrieved successfully",
+              example: {
+                id: "question-uuid-123",
+                text: "How many meals did your household eat yesterday?",
+                type: "meals_per_day",
+                order_index: 1,
+                required: true
+              }
+            }
+          }
+        },
+        {
+          method: "POST",
+          path: "/questions",
+          description: "Create new question",
+          parameters: [],
+          requestBody: {
+            description: "Question data",
+            required: true,
+            example: {
+              text: "How many days of food does your household have?",
+              type: "days_of_food",
+              order_index: 2,
+              required: true
+            }
+          },
+          responses: {
+            201: {
+              description: "Question created successfully",
+              example: {
+                id: "new-question-uuid",
+                text: "How many days of food does your household have?",
+                type: "days_of_food",
+                order_index: 2,
+                required: true
+              }
+            }
+          }
+        },
+        {
+          method: "PUT",
+          path: "/questions/:id",
+          description: "Update question",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Question UUID"
+            }
+          ],
+          requestBody: {
+            description: "Updated question data",
+            required: true,
+            example: {
+              text: "Updated question text",
+              order_index: 3
+            }
+          },
+          responses: {
+            200: {
+              description: "Question updated successfully",
+              example: {
+                id: "question-uuid-123",
+                text: "Updated question text",
+                type: "meals_per_day",
+                order_index: 3,
+                required: true
+              }
+            }
+          }
+        },
+        {
+          method: "DELETE",
+          path: "/questions/:id",
+          description: "Delete question",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Question UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Question deleted successfully",
+              example: {
+                message: "Question deleted successfully"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      name: "Question Logic",
+      icon: "🧠",
+      description: "Question logic and conditional rules",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/question-logic",
+          description: "Get all question logic",
+          parameters: [],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Question logic retrieved successfully",
+              example: [
+                {
+                  id: "logic-uuid-123",
+                  question_id: "question-uuid-456",
+                  condition: "equals",
+                  value: "1",
+                  action: "show",
+                  target_question_id: "question-uuid-789"
+                }
+              ]
+            }
+          }
+        },
+        {
+          method: "GET",
+          path: "/question-logic/:id",
+          description: "Get question logic by ID",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Question logic UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Question logic retrieved successfully",
+              example: {
+                id: "logic-uuid-123",
+                question_id: "question-uuid-456",
+                condition: "equals",
+                value: "1",
+                action: "show",
+                target_question_id: "question-uuid-789"
+              }
+            }
+          }
+        },
+        {
+          method: "POST",
+          path: "/question-logic",
+          description: "Create new question logic",
+          parameters: [],
+          requestBody: {
+            description: "Question logic data",
+            required: true,
+            example: {
+              question_id: "question-uuid-456",
+              condition: "greater_than",
+              value: "2",
+              action: "show",
+              target_question_id: "question-uuid-789"
+            }
+          },
+          responses: {
+            201: {
+              description: "Question logic created successfully",
+              example: {
+                id: "new-logic-uuid",
+                question_id: "question-uuid-456",
+                condition: "greater_than",
+                value: "2",
+                action: "show",
+                target_question_id: "question-uuid-789"
+              }
+            }
+          }
+        },
+        {
+          method: "PUT",
+          path: "/question-logic/:id",
+          description: "Update question logic",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Question logic UUID"
+            }
+          ],
+          requestBody: {
+            description: "Updated question logic data",
+            required: true,
+            example: {
+              condition: "less_than",
+              value: "3"
+            }
+          },
+          responses: {
+            200: {
+              description: "Question logic updated successfully",
+              example: {
+                id: "logic-uuid-123",
+                question_id: "question-uuid-456",
+                condition: "less_than",
+                value: "3",
+                action: "show",
+                target_question_id: "question-uuid-789"
+              }
+            }
+          }
+        },
+        {
+          method: "DELETE",
+          path: "/question-logic/:id",
+          description: "Delete question logic",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Question logic UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Question logic deleted successfully",
+              example: {
+                message: "Question logic deleted successfully"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      name: "Responses",
+      icon: "📝",
+      description: "Survey response management",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/responses",
+          description: "Get all responses",
+          parameters: [],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Responses retrieved successfully",
+              example: [
+                {
+                  id: "response-uuid-123",
+                  citizen_id: "citizen-uuid-456",
+                  survey_id: "survey-uuid-789",
+                  answers: ["1", "2", "3"],
+                  submitted_at: "2026-01-07T10:30:00Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          method: "GET",
+          path: "/responses/:id",
+          description: "Get response by ID",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Response UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Response retrieved successfully",
+              example: {
+                id: "response-uuid-123",
+                citizen_id: "citizen-uuid-456",
+                survey_id: "survey-uuid-789",
+                answers: ["1", "2", "3"],
+                submitted_at: "2026-01-07T10:30:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "POST",
+          path: "/responses",
+          description: "Create new response",
+          parameters: [],
+          requestBody: {
+            description: "Response data",
+            required: true,
+            example: {
+              citizen_id: "citizen-uuid-456",
+              survey_id: "survey-uuid-789",
+              answers: ["2", "3", "1"]
+            }
+          },
+          responses: {
+            201: {
+              description: "Response created successfully",
+              example: {
+                id: "new-response-uuid",
+                citizen_id: "citizen-uuid-456",
+                survey_id: "survey-uuid-789",
+                answers: ["2", "3", "1"],
+                submitted_at: "2026-01-15T14:30:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "PUT",
+          path: "/responses/:id",
+          description: "Update response",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Response UUID"
+            }
+          ],
+          requestBody: {
+            description: "Updated response data",
+            required: true,
+            example: {
+              answers: ["3", "2", "1"]
+            }
+          },
+          responses: {
+            200: {
+              description: "Response updated successfully",
+              example: {
+                id: "response-uuid-123",
+                citizen_id: "citizen-uuid-456",
+                survey_id: "survey-uuid-789",
+                answers: ["3", "2", "1"],
+                submitted_at: "2026-01-07T10:30:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "DELETE",
+          path: "/responses/:id",
+          description: "Delete response",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Response UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Response deleted successfully",
+              example: {
+                message: "Response deleted successfully"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      name: "Surveys",
+      icon: "📋",
+      description: "Survey management and administration",
+      endpoints: [
+        {
+          method: "GET",
+          path: "/surveys",
+          description: "Get all surveys (public)",
+          parameters: [],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Surveys retrieved successfully",
+              example: [
+                {
+                  id: "survey-uuid-123",
+                  title: "Weekly Food Security Survey",
+                  description: "Monitor household food security",
+                  status: "PUBLISHED",
+                  created_at: "2026-01-01T10:00:00Z"
+                }
+              ]
+            }
+          }
+        },
+        {
+          method: "GET",
+          path: "/surveys/:id",
+          description: "Get survey by ID (public)",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Survey UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Survey retrieved successfully",
+              example: {
+                id: "survey-uuid-123",
+                title: "Weekly Food Security Survey",
+                description: "Monitor household food security",
+                status: "PUBLISHED",
+                created_at: "2026-01-01T10:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "POST",
+          path: "/surveys",
+          description: "Create new survey (admin or ministry only)",
+          parameters: [],
+          requestBody: {
+            description: "Survey data",
+            required: true,
+            example: {
+              title: "Monthly Food Security Check",
+              description: "Comprehensive food security assessment",
+              region_ids: ["region-uuid-1", "region-uuid-2"]
+            }
+          },
+          responses: {
+            201: {
+              description: "Survey created successfully",
+              example: {
+                id: "new-survey-uuid",
+                title: "Monthly Food Security Check",
+                description: "Comprehensive food security assessment",
+                status: "DRAFT",
+                created_at: "2026-01-15T14:30:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "PUT",
+          path: "/surveys/:id",
+          description: "Update survey (admin or ministry only)",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Survey UUID"
+            }
+          ],
+          requestBody: {
+            description: "Updated survey data",
+            required: true,
+            example: {
+              title: "Updated Survey Title",
+              description: "Updated description"
+            }
+          },
+          responses: {
+            200: {
+              description: "Survey updated successfully",
+              example: {
+                id: "survey-uuid-123",
+                title: "Updated Survey Title",
+                description: "Updated description",
+                status: "DRAFT",
+                created_at: "2026-01-01T10:00:00Z"
+              }
+            }
+          }
+        },
+        {
+          method: "DELETE",
+          path: "/surveys/:id",
+          description: "Delete survey (admin or ministry only)",
+          parameters: [
+            {
+              name: "id",
+              type: "path",
+              required: true,
+              description: "Survey UUID"
+            }
+          ],
+          requestBody: null,
+          responses: {
+            200: {
+              description: "Survey deleted successfully",
+              example: {
+                message: "Survey deleted successfully"
+              }
+            }
+          }
         }
       ]
     },
