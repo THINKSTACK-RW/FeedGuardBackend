@@ -21,6 +21,31 @@ const foodReportController = {
         });
       }
 
+      // Check if citizen exists, create if not (for mobile app users)
+      let citizen = await Citizen.findByPk(citizen_id);
+      if (!citizen) {
+        // Create a basic citizen record for mobile app users with default location
+        const defaultLocation = await Location.findOne({ where: { name: 'Default Location' } }) ||
+          await Location.create({
+            name: 'Default Location',
+            village: null,
+            sector: null,
+            district: null,
+            country: 'Rwanda',
+            province: 'Kigali',
+            latitude: -1.9441,
+            longitude: 30.0619
+          });
+
+        citizen = await Citizen.create({
+          id: citizen_id,
+          name: 'Mobile App User',
+          phone: null,
+          location_id: defaultLocation.id, // Always required
+          created_at: new Date()
+        });
+      }
+
       // Calculate food security score and risk level
       const { food_security_score, risk_level } = calculateFoodSecurityMetrics({
         meals_per_day,
