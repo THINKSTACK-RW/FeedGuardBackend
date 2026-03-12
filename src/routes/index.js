@@ -21,6 +21,7 @@ const foodReportRoutes = require('./foodReportRoutes');
 const smsRoutes = require('./smsRoutes');
 const apiDocsRoutes = require('./apiDocsRoutes');
 const mobileAuthRoutes = require('./mobileAuthRoutes');
+const geocodingRoutes = require('./geocodingRoutes');
 
 // Mount existing routes
 router.use('/auth', authRoutes);
@@ -41,6 +42,7 @@ router.use('/map', mapRoutes);
 router.use('/food-reports', foodReportRoutes);
 router.use('/sms', smsRoutes);
 router.use('/mobile-auth', mobileAuthRoutes);
+router.use('/geocoding', geocodingRoutes);
 
 // Mount API docs route at root level
 router.use('/api-docs', apiDocsRoutes);
