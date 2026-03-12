@@ -39,6 +39,234 @@ const reportService = {
     }
   },
 
+  // Get detailed reports grouped by location
+  async getRegionalReports(filters = {}) {
+    try {
+      const whereClause = {};
+      
+      if (filters.region_id) {
+        whereClause['$Citizen.Location.id$'] = filters.region_id;
+      }
+      
+      if (filters.status) {
+        whereClause.risk_level = filters.status === 'critical' ? 'critical' : 
+                              filters.status === 'warning' ? ['medium', 'high'] : 'low';
+      }
+
+      if (filters.date_range) {
+        const dates = this.parseDateRange(filters.date_range);
+        whereClause.submitted_at = {
+          [require('sequelize').Op.between]: [dates.start, dates.end]
+        };
+      }
+
+      const responses = await Response.findAll({
+        where: whereClause,
+        include: [{
+          model: Citizen,
+          attributes: ['id', 'name', 'phone'],
+          include: [{
+            model: Location,
+            attributes: ['id', 'name', 'district', 'sector', 'village', 'latitude', 'longitude']
+          }]
+        }],
+        order: [['submitted_at', 'DESC']]
+      });
+
+      // Group responses by location
+      const locationGroups = {};
+      
+      responses.forEach(response => {
+        const location = response.Citizen.Location;
+        if (!location) return;
+        
+        const locationKey = location.id;
+        
+        if (!locationGroups[locationKey]) {
+          locationGroups[locationKey] = {
+            locationId: location.id,
+            locationName: location.name,
+            district: location.district,
+            sector: location.sector,
+            village: location.village,
+            latitude: location.latitude,
+            longitude: location.longitude,
+            totalResponses: 0,
+            critical: 0,
+            warning: 0,
+            stable: 0,
+            avgMealsPerDay: 0,
+            avgDaysOfFoodLeft: 0,
+            responses: []
+          };
+        }
+        
+        const group = locationGroups[locationKey];
+        group.totalResponses++;
+        group.responses.push({
+          id: response.id,
+          citizenId: response.Citizen.id,
+          citizenName: response.Citizen.name || 'Anonymous',
+          citizenPhone: response.Citizen.phone || 'N/A',
+          date: response.submitted_at.toISOString().split('T')[0],
+          time: response.submitted_at.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          mealsPerDay: response.meals_per_day,
+          daysOfFoodLeft: response.days_of_food_left,
+          foodChangeType: response.food_change_type,
+          shocksExperienced: response.shocks_experienced || [],
+          riskLevel: response.risk_level,
+          status: this.determineStatus(response.risk_level)
+        });
+        
+        // Count risk levels
+        if (response.risk_level === 'critical') group.critical++;
+        else if (response.risk_level === 'medium' || response.risk_level === 'high') group.warning++;
+        else group.stable++;
+        
+        // Accumulate for averages
+        if (response.meals_per_day) {
+          group.avgMealsPerDay += response.meals_per_day;
+        }
+        if (response.days_of_food_left) {
+          group.avgDaysOfFoodLeft += response.days_of_food_left;
+        }
+      });
+      
+      // Calculate averages and convert to array
+      const regionalReports = Object.values(locationGroups).map(group => {
+        group.avgMealsPerDay = group.totalResponses > 0 ? 
+          Math.round((group.avgMealsPerDay / group.totalResponses) * 10) / 10 : 0;
+        group.avgDaysOfFoodLeft = group.totalResponses > 0 ? 
+          Math.round(group.avgDaysOfFoodLeft / group.totalResponses) : 0;
+        
+        // Determine overall status for the location
+        let overallStatus = 'Stable';
+        if (group.critical > 0) overallStatus = 'Critical';
+        else if (group.warning > group.stable) overallStatus = 'Warning';
+        
+        group.overallStatus = overallStatus;
+        group.trend = this.calculateTrend(null); // Simplified trend
+        
+        return group;
+      });
+      
+      // Sort by total responses (most active first)
+      regionalReports.sort((a, b) => b.totalResponses - a.totalResponses);
+      
+      return regionalReports;
+    } catch (error) {
+      throw new Error(`Failed to get regional reports: ${error.message}`);
+    }
+  },
+
+  // Get individual responses for a specific location
+  async getLocationResponses(locationId, filters = {}) {
+    try {
+      const whereClause = {
+        '$Citizen.Location.id$': locationId
+      };
+      
+      if (filters.status) {
+        whereClause.risk_level = filters.status === 'critical' ? 'critical' : 
+                              filters.status === 'warning' ? ['medium', 'high'] : 'low';
+      }
+
+      if (filters.date_range) {
+        const dates = this.parseDateRange(filters.date_range);
+        whereClause.submitted_at = {
+          [require('sequelize').Op.between]: [dates.start, dates.end]
+        };
+      }
+
+      const responses = await Response.findAll({
+        where: whereClause,
+        include: [{
+          model: Citizen,
+          attributes: ['id', 'name', 'phone', 'email', 'village', 'sector', 'district', 'household_size'],
+          include: [{
+            model: Location,
+            attributes: ['id', 'name', 'district', 'sector', 'village', 'latitude', 'longitude']
+          }]
+        }],
+        order: [['submitted_at', 'DESC']]
+      });
+
+      if (!responses || responses.length === 0) {
+        return { location: null, responses: [] };
+      }
+
+      const location = responses[0].Citizen.Location;
+      
+      const formattedResponses = responses.map(response => ({
+        id: response.id,
+        citizen: {
+          id: response.Citizen.id,
+          name: response.Citizen.name || 'Anonymous',
+          phone: response.Citizen.phone || 'N/A',
+          email: response.Citizen.email || 'N/A',
+          village: response.Citizen.village || 'N/A',
+          sector: response.Citizen.sector || 'N/A',
+          district: response.Citizen.district || 'N/A',
+          householdSize: response.Citizen.household_size || 'N/A'
+        },
+        survey: {
+          date: response.submitted_at.toISOString().split('T')[0],
+          time: response.submitted_at.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          mealsPerDay: response.meals_per_day,
+          daysOfFoodLeft: response.days_of_food_left,
+          foodChangeType: response.food_change_type,
+          shocksExperienced: response.shocks_experienced || [],
+          riskLevel: response.risk_level,
+          status: this.determineStatus(response.risk_level)
+        }
+      }));
+
+      return {
+        location: {
+          id: location.id,
+          name: location.name,
+          district: location.district,
+          sector: location.sector,
+          village: location.village,
+          latitude: location.latitude,
+          longitude: location.longitude
+        },
+        responses: formattedResponses,
+        summary: {
+          total: formattedResponses.length,
+          critical: formattedResponses.filter(r => r.survey.riskLevel === 'critical').length,
+          warning: formattedResponses.filter(r => r.survey.riskLevel === 'medium' || r.survey.riskLevel === 'high').length,
+          stable: formattedResponses.filter(r => r.survey.riskLevel === 'low').length,
+          avgMealsPerDay: Math.round(formattedResponses.reduce((sum, r) => sum + (r.survey.mealsPerDay || 0), 0) / formattedResponses.length * 10) / 10 || 0,
+          avgDaysOfFoodLeft: Math.round(formattedResponses.reduce((sum, r) => sum + (r.survey.daysOfFoodLeft || 0), 0) / formattedResponses.length) || 0
+        }
+      };
+    } catch (error) {
+      throw new Error(`Failed to get location responses: ${error.message}`);
+    }
+  },
+
+  // Export location responses to CSV
+  async exportLocationResponses(locationId, format = 'csv', filters = {}) {
+    try {
+      const locationData = await this.getLocationResponses(locationId, filters);
+      
+      if (!locationData.responses || locationData.responses.length === 0) {
+        throw new Error('No responses found for this location');
+      }
+      
+      if (format === 'csv') {
+        return this.convertLocationResponsesToCSV(locationData);
+      } else if (format === 'pdf') {
+        return { message: 'PDF export not implemented yet' };
+      }
+      
+      throw new Error('Unsupported export format');
+    } catch (error) {
+      throw new Error(`Failed to export location responses: ${error.message}`);
+    }
+  },
+
   // Get detailed reports data
   async getDetailedReports(filters = {}) {
     try {
@@ -137,7 +365,7 @@ const reportService = {
   async getMapData() {
     try {
       const locations = await Location.findAll({
-        attributes: ['id', 'name', 'latitude', 'longitude'],
+        attributes: ['id', 'name', 'district', 'sector', 'village', 'latitude', 'longitude'],
         include: [{
           model: Citizen,
           attributes: ['id'],
@@ -149,7 +377,7 @@ const reportService = {
         }]
       });
 
-      const mapData = locations.map((location, index) => {
+      const mapData = locations.map((location) => {
         const responses = location.Citizens.flatMap(citizen => citizen.Responses || []);
         const criticalCount = responses.filter(r => r.risk_level === 'critical').length;
         const atRiskCount = responses.filter(r => r.risk_level === 'medium' || r.risk_level === 'high').length;
@@ -159,24 +387,33 @@ const reportService = {
         if (criticalCount > 0) status = 'critical';
         else if (atRiskCount > stableCount) status = 'warning';
 
-        // Mock coordinates for demonstration
-        const mockCoordinates = [
-          { x: 200, y: 150 }, // Kibera
-          { x: 450, y: 280 }, // Makina
-          { x: 300, y: 400 }, // Lindi
-          { x: 600, y: 200 }  // Soweto
-        ];
+        // Convert lat/lng to map coordinates (simple projection)
+        // Rwanda is roughly between lat: -1.5 to -2.5, lng: 29 to 31
+        // Map to 0-800px range
+        const x = ((location.longitude - 29) / 2) * 800; // lng 29-31 maps to 0-800
+        const y = ((-location.latitude - 1.5) / 1) * 600; // lat -1.5 to -2.5 maps to 0-600 (inverted)
 
         return {
-          id: index + 1,
-          x: mockCoordinates[index % 4].x,
-          y: mockCoordinates[index % 4].y,
+          id: location.id,
+          x: Math.max(50, Math.min(750, x)), // Keep within bounds
+          y: Math.max(50, Math.min(550, y)), // Keep within bounds
           region: location.name,
+          district: location.district,
+          sector: location.sector,
+          village: location.village,
           status,
           households: location.Citizens.length,
+          totalResponses: responses.length,
+          critical: criticalCount,
+          warning: atRiskCount,
+          stable: stableCount,
           risk: status === 'critical' ? 'High' : status === 'warning' ? 'Moderate' : 'Low',
-          mealsPerDay: Math.round(responses.reduce((sum, r) => sum + (r.meals_per_day || 0), 0) / responses.length) || 2,
-          daysOfFood: Math.round(responses.reduce((sum, r) => sum + (r.days_of_food_left || 0), 0) / responses.length) || 3
+          mealsPerDay: responses.length > 0 ? 
+            Math.round(responses.reduce((sum, r) => sum + (r.meals_per_day || 0), 0) / responses.length * 10) / 10 : 0,
+          daysOfFood: responses.length > 0 ? 
+            Math.round(responses.reduce((sum, r) => sum + (r.days_of_food_left || 0), 0) / responses.length) : 0,
+          latitude: location.latitude,
+          longitude: location.longitude
         };
       });
 
@@ -242,6 +479,97 @@ const reportService = {
     );
     
     return [csvHeaders, ...csvRows].join('\n');
+  },
+
+  convertLocationResponsesToCSV(locationData) {
+    if (!locationData.responses || locationData.responses.length === 0) return '';
+    
+    const headers = [
+      'Response ID',
+      'Citizen Name',
+      'Citizen Phone',
+      'Citizen Email',
+      'District',
+      'Sector',
+      'Village',
+      'Household Size',
+      'Survey Date',
+      'Survey Time',
+      'Meals Per Day',
+      'Days of Food Left',
+      'Food Change Type',
+      'Shocks Experienced',
+      'Risk Level',
+      'Status'
+    ];
+    
+    const csvRows = locationData.responses.map(response => {
+      const shocks = response.survey.shocksExperienced.length > 0 
+        ? `"${response.survey.shocksExperienced.join('; ')}"` 
+        : 'None';
+      
+      return [
+        response.id,
+        `"${response.citizen.name}"`,
+        response.citizen.phone,
+        response.citizen.email,
+        `"${response.citizen.district}"`,
+        `"${response.citizen.sector}"`,
+        `"${response.citizen.village}"`,
+        response.citizen.householdSize,
+        response.survey.date,
+        response.survey.time,
+        response.survey.mealsPerDay || 'N/A',
+        response.survey.daysOfFoodLeft || 'N/A',
+        `"${response.survey.foodChangeType || 'None'}"`,
+        shocks,
+        response.survey.riskLevel || 'Unknown',
+        response.survey.status || 'Unknown'
+      ].join(',');
+    });
+    
+    // Add summary header
+    const summary = [
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ].join(',');
+    
+    const summaryRow = [
+      'SUMMARY',
+      `Total Responses: ${locationData.summary.total}`,
+      `Critical: ${locationData.summary.critical}`,
+      `Warning: ${locationData.summary.warning}`,
+      `Stable: ${locationData.summary.stable}`,
+      `Avg Meals/Day: ${locationData.summary.avgMealsPerDay}`,
+      `Avg Days of Food: ${locationData.summary.avgDaysOfFoodLeft}`,
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      '',
+      ''
+    ].join(',');
+    
+    return [headers.join(','), ...csvRows, summary, summaryRow].join('\n');
   }
 };
 
