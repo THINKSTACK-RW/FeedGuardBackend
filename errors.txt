@@ -1,0 +1,12 @@
+src/services/PredictionService.ts(1,23): error TS2307: Cannot find module 'child_process' or its corresponding type declarations.
+src/services/PredictionService.ts(2,18): error TS2307: Cannot find module 'path' or its corresponding type declarations.
+src/services/PredictionService.ts(27,34): error TS2304: Cannot find name '__dirname'.
+src/services/PredictionService.ts(36,40): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/PredictionService.ts(40,40): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/services/PredictionService.ts(44,34): error TS7006: Parameter 'code' implicitly has an 'any' type.
+src/services/PredictionService.ts(60,1): error TS1295: ECMAScript imports and exports cannot be written in a CommonJS file under 'verbatimModuleSyntax'. Adjust the 'type' field in the nearest 'package.json' to make this file an ECMAScript module, or adjust your 'verbatimModuleSyntax', 'module', and 'moduleResolution' settings in TypeScript.
+src/test_prediction.ts(1,8): error TS1295: ECMAScript imports and exports cannot be written in a CommonJS file under 'verbatimModuleSyntax'. Adjust the 'type' field in the nearest 'package.json' to make this file an ECMAScript module, or adjust your 'verbatimModuleSyntax', 'module', and 'moduleResolution' settings in TypeScript.
+src/test_prediction.ts(1,29): error TS1295: ECMAScript imports and exports cannot be written in a CommonJS file under 'verbatimModuleSyntax'. Adjust the 'type' field in the nearest 'package.json' to make this file an ECMAScript module, or adjust your 'verbatimModuleSyntax', 'module', and 'moduleResolution' settings in TypeScript.
+src/test_prediction.ts(1,29): error TS1484: 'HouseholdData' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/test_prediction.ts(24,5): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.
+src/test_prediction.ts(27,5): error TS2591: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node` and then add 'node' to the types field in your tsconfig.

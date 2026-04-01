@@ -1,0 +1,78 @@
+[dotenv@17.2.3] injecting env (12) from .env -- tip: ⚙️  specify custom .env file path with { path: '/custom/path/.env' }
+Database connection has been established successfully.
+Unable to start server: Error
+    at Query.run (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\sequelize\src\dialects\postgres\query.js:76:25)
+    at D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\sequelize\src\sequelize.js:650:28
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async Function.sync (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\sequelize\src\model.js:1408:11)
+    at async Sequelize.sync (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\sequelize\src\sequelize.js:825:9)
+    at async startServer (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\src\index.js:41:5) {
+  name: 'SequelizeDatabaseError',
+  parent: error: syntax error at or near "USING"
+      at parseErrorMessage (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\parser.ts:394:9)
+      at Parser.handlePacket (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\parser.ts:212:19)
+      at Parser.parse (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\parser.ts:105:30)
+      at Socket.<anonymous> (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\index.ts:7:48)
+      at Socket.emit (node:events:507:28)
+      at Socket.emit (node:domain:489:12)
+      at addChunk (node:internal/streams/readable:559:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+      at Socket.Readable.push (node:internal/streams/readable:390:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    length: 95,
+    severity: 'ERROR',
+    code: '42601',
+    detail: undefined,
+    hint: undefined,
+    position: '503',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'scan.l',
+    line: '1248',
+    routine: 'scanner_yyerror',
+    sql: `ALTER TABLE "responses" ALTER COLUMN "food_change_type" DROP NOT NULL;ALTER TABLE "responses" ALTER COLUMN "food_change_type" DROP DEFAULT;DO 'BEGIN CREATE TYPE "public"."enum_responses_food_change_type" AS ENUM(''none'', ''quantity'', ''quality'', ''both''); EXCEPTION WHEN duplicate_object THEN null; END';ALTER TABLE "responses" ALTER COLUMN "food_change_type" TYPE "public"."enum_responses_food_change_type"; COMMENT ON COLUMN "responses"."food_change_type" IS 'Type of food reduction experienced' USING ("food_change_type"::"public"."enum_responses_food_change_type");`,
+    parameters: undefined
+  },
+  original: error: syntax error at or near "USING"
+      at parseErrorMessage (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\parser.ts:394:9)
+      at Parser.handlePacket (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\parser.ts:212:19)
+      at Parser.parse (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\parser.ts:105:30)
+      at Socket.<anonymous> (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\node_modules\pg-protocol\src\index.ts:7:48)
+      at Socket.emit (node:events:507:28)
+      at Socket.emit (node:domain:489:12)
+      at addChunk (node:internal/streams/readable:559:12)
+      at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+      at Socket.Readable.push (node:internal/streams/readable:390:5)
+      at TCP.onStreamRead (node:internal/stream_base_commons:189:23) {
+    length: 95,
+    severity: 'ERROR',
+    code: '42601',
+    detail: undefined,
+    hint: undefined,
+    position: '503',
+    internalPosition: undefined,
+    internalQuery: undefined,
+    where: undefined,
+    schema: undefined,
+    table: undefined,
+    column: undefined,
+    dataType: undefined,
+    constraint: undefined,
+    file: 'scan.l',
+    line: '1248',
+    routine: 'scanner_yyerror',
+    sql: `ALTER TABLE "responses" ALTER COLUMN "food_change_type" DROP NOT NULL;ALTER TABLE "responses" ALTER COLUMN "food_change_type" DROP DEFAULT;DO 'BEGIN CREATE TYPE "public"."enum_responses_food_change_type" AS ENUM(''none'', ''quantity'', ''quality'', ''both''); EXCEPTION WHEN duplicate_object THEN null; END';ALTER TABLE "responses" ALTER COLUMN "food_change_type" TYPE "public"."enum_responses_food_change_type"; COMMENT ON COLUMN "responses"."food_change_type" IS 'Type of food reduction experienced' USING ("food_change_type"::"public"."enum_responses_food_change_type");`,
+    parameters: undefined
+  },
+  sql: `ALTER TABLE "responses" ALTER COLUMN "food_change_type" DROP NOT NULL;ALTER TABLE "responses" ALTER COLUMN "food_change_type" DROP DEFAULT;DO 'BEGIN CREATE TYPE "public"."enum_responses_food_change_type" AS ENUM(''none'', ''quantity'', ''quality'', ''both''); EXCEPTION WHEN duplicate_object THEN null; END';ALTER TABLE "responses" ALTER COLUMN "food_change_type" TYPE "public"."enum_responses_food_change_type"; COMMENT ON COLUMN "responses"."food_change_type" IS 'Type of food reduction experienced' USING ("food_change_type"::"public"."enum_responses_food_change_type");`,
+  parameters: {}
+}
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0100   357  100   192  100   165    887    762 --:--:-- --:--:-- --:--:--  1652{"message":"Food report submitted successfully","response":{"id":"e1f49355-b0eb-476b-bcd5-e6460f5695cb","food_security_score":45,"risk_level":"high","submitted_at":"2026-03-12T20:51:45.767Z"}}

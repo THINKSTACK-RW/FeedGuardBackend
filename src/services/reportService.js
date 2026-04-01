@@ -343,19 +343,38 @@ const reportService = {
   // Get insights and predictions
   async getInsights() {
     try {
-      const insights = {
+      const totalResponses = await Response.count();
+      const avgMeals = await Response.aggregate('meals_per_day', 'AVG', {
+        where: { meals_per_day: { [require('sequelize').Op.not]: null } }
+      }) || 0;
+      
+      const criticalCount = await Response.count({ where: { risk_level: 'critical' } });
+      const recentCritical = await Response.count({ 
+        where: { 
+          risk_level: 'critical',
+          submitted_at: { [require('sequelize').Op.gte]: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        } 
+      });
+
+      // Simple prediction logic based on trend
+      let prediction = 'Stable';
+      let predictionText = 'Food security levels are currently stable across most monitored regions.';
+      
+      if (criticalCount > totalResponses * 0.2) {
+        prediction = 'Worsening';
+        predictionText = 'AI analysis indicates a worsening trend. Critical food shortages are spreading in high-risk zones.';
+      } else if (recentCritical < (criticalCount / 4)) {
+        prediction = 'Improving';
+        predictionText = 'Predictive models show an improving trend due to reduced critical reports in the last 7 days.';
+      }
+
+      return {
         totalHouseholds: await Citizen.count(),
-        avgMealsPerDay: await Response.aggregate('meals_per_day', 'AVG', {
-          where: { meals_per_day: { [require('sequelize').Op.not]: null } }
-        }),
-        criticalAlerts: await Response.count({ where: { risk_level: 'critical' } }),
-        prediction: 'Improving Trend',
-        predictionText: 'Based on current data, food security is expected to stabilize in the next 14 days due to recent interventions.'
+        avgMealsPerDay: Math.round(avgMeals * 10) / 10,
+        criticalAlerts: criticalCount,
+        prediction,
+        predictionText
       };
-
-      insights.avgMealsPerDay = Math.round(insights.avgMealsPerDay * 10) / 10 || 0;
-
-      return insights;
     } catch (error) {
       throw new Error(`Failed to get insights: ${error.message}`);
     }

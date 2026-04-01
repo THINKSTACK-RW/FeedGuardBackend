@@ -39,7 +39,7 @@ router.use('/dashboard', dashboardRoutes);
 router.use('/alerts', alertsRoutes);
 router.use('/reports', reportsRoutes);
 router.use('/map', mapRoutes);
-router.use('/food-reports', foodReportRoutes);
+router.use('/v2/food-reports', foodReportRoutes);
 router.use('/sms', smsRoutes);
 router.use('/mobile-auth', mobileAuthRoutes);
 router.use('/geocoding', geocodingRoutes);
