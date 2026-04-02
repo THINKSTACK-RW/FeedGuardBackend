@@ -65,8 +65,8 @@ async function startServer() {
     await sequelize.authenticate();
     console.log('Database connection has been established successfully.');
     
-    // For development reset, use force: true temporarily
-    await sequelize.sync({ force: true });
+    // Use force: false for production/stable dev to avoid wiping data
+    await sequelize.sync({ force: false });
     console.log('Database synchronized successfully.');
     
     // Start server
