@@ -46,6 +46,20 @@ app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root health check for Render
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    service: 'FeedGuard Backend',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: '/health',
+      api: '/api',
+      docs: '/api/api-docs'
+    }
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -72,10 +86,12 @@ async function startServer() {
     // Start server
     app.listen(PORT, '0.0.0.0', () => {
       console.log('\n' + '='.repeat(40));
-      console.log(`🚀 FEEDGUARD BACKEND RUNNING`);
+      console.log(` FEEDGUARD BACKEND RUNNING`);
       console.log(`- Local:   http://localhost:${PORT}`);
-      console.log(`- Network: http://${ip}:${PORT}`);
-      console.log('='.repeat(40) + '\n');
+      console.log(`- Network: http://0.0.0.0:${PORT}`);
+      console.log(`- API Docs: http://localhost:${PORT}/api/api-docs`);
+      console.log(`- Database: ${process.env.DB_DIALECT || 'sqlite'}`);
+      console.log('\n' + '='.repeat(40));
     });
   } catch (error) {
     console.error('Unable to start server:', error);

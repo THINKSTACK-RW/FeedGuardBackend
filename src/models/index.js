@@ -1,36 +1,34 @@
 const { Sequelize } = require("sequelize");
 
-// Use local SQLite for testing due to network issues
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './database.sqlite',
-  logging: false
-});
+// Use DATABASE_URL for Render deployment
+const databaseUrl = process.env.DATABASE_URL;
 
-// Original PostgreSQL configuration (commented out due to network timeout)
-// const databaseUrl = process.env.DATABASE_URL;
-// const sequelize = databaseUrl 
-//   ? new Sequelize(databaseUrl, {
-//       logging: false,
-//       dialect: 'postgres'
-//     })
-//   : new Sequelize(
-//       process.env.DB_NAME,
-//       process.env.DB_USER,
-//       process.env.DB_PASSWORD,
-//       {
-//         host: process.env.DB_HOST,
-//         dialect: "postgres",
-//         port: 5432,
-//         logging: false,
-//         dialectOptions: {
-//           ssl: {
-//             require: true,
-//             rejectUnauthorized: false
-//           }
-//         }
-//       }
-//     );
+const sequelize = databaseUrl 
+  ? new Sequelize(databaseUrl, {
+      logging: false,
+      dialect: 'postgres',
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    })
+  : new Sequelize(
+      process.env.DB_NAME,
+      process.env.DB_USER,
+      process.env.DB_PASSWORD,
+      {
+        host: process.env.DB_HOST,
+        dialect: "postgres",
+        port: 5432,
+        logging: false,
+        dialectOptions: {
+          ssl: {
+            require: true,
+            rejectUnauthorized: false
+          }
+        }
+      }
+    );
 
 const db = {};
 
