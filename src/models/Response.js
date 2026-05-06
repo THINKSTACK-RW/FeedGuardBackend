@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ENUM("low", "medium", "high", "critical"),
       allowNull: true,
     },
-    meals_per_day: {
+        meals_per_day: {
       type: DataTypes.INTEGER,
       allowNull: true,
       comment: "Number of meals consumed per day",

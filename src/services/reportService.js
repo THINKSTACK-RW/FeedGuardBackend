@@ -1,4 +1,5 @@
 const { Response, Citizen, Location, Survey } = require('../models');
+const aiPredictionService = require('./aiPredictionService');
 
 const reportService = {
   // Generate summary statistics for reports page
@@ -62,6 +63,11 @@ const reportService = {
 
       const responses = await Response.findAll({
         where: whereClause,
+        attributes: [
+          'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+          'food_security_score', 'risk_level', 'meals_per_day', 
+          'days_of_food_left', 'food_change_type', 'shocks_experienced'
+        ],
         include: [{
           model: Citizen,
           attributes: ['id', 'name', 'phone'],
@@ -115,6 +121,7 @@ const reportService = {
           foodChangeType: response.food_change_type,
           shocksExperienced: response.shocks_experienced || [],
           riskLevel: response.risk_level,
+          confidence: response.ai_confidence || null,
           status: this.determineStatus(response.risk_level)
         });
         
@@ -180,6 +187,11 @@ const reportService = {
 
       const responses = await Response.findAll({
         where: whereClause,
+        attributes: [
+          'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+          'food_security_score', 'risk_level', 'meals_per_day', 
+          'days_of_food_left', 'food_change_type', 'shocks_experienced'
+        ],
         include: [{
           model: Citizen,
           attributes: ['id', 'name', 'phone', 'email', 'village', 'sector', 'district', 'household_size'],
@@ -217,6 +229,7 @@ const reportService = {
           foodChangeType: response.food_change_type,
           shocksExperienced: response.shocks_experienced || [],
           riskLevel: response.risk_level,
+          confidence: response.ai_confidence,
           status: this.determineStatus(response.risk_level)
         }
       }));
@@ -283,6 +296,11 @@ const reportService = {
 
       const responses = await Response.findAll({
         where: whereClause,
+        attributes: [
+          'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+          'food_security_score', 'risk_level', 'meals_per_day', 
+          'days_of_food_left', 'food_change_type', 'shocks_experienced'
+        ],
         include: [{
           model: Citizen,
           attributes: ['id'],
@@ -343,17 +361,60 @@ const reportService = {
   // Get insights and predictions
   async getInsights() {
     try {
-      const insights = {
-        totalHouseholds: await Citizen.count(),
-        avgMealsPerDay: await Response.aggregate('meals_per_day', 'AVG', {
+      const [totalHouseholds, criticalAlerts, avgMealsPerDayRaw, avgDaysOfFoodRaw] = await Promise.all([
+        Citizen.count(),
+        Response.count({ where: { risk_level: 'critical' } }),
+        Response.aggregate('meals_per_day', 'AVG', {
           where: { meals_per_day: { [require('sequelize').Op.not]: null } }
         }),
-        criticalAlerts: await Response.count({ where: { risk_level: 'critical' } }),
-        prediction: 'Improving Trend',
-        predictionText: 'Based on current data, food security is expected to stabilize in the next 14 days due to recent interventions.'
-      };
+        Response.aggregate('days_of_food_left', 'AVG', {
+          where: { days_of_food_left: { [require('sequelize').Op.not]: null } }
+        })
+      ]);
 
-      insights.avgMealsPerDay = Math.round(insights.avgMealsPerDay * 10) / 10 || 0;
+      const avgMealsPerDay = Math.round((Number(avgMealsPerDayRaw) || 0) * 10) / 10;
+      const avgDaysOfFood = Math.round(Number(avgDaysOfFoodRaw) || 0);
+      const latestResponse = await Response.findOne({
+        attributes: [
+          'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+          'food_security_score', 'risk_level', 'meals_per_day', 
+          'days_of_food_left', 'food_change_type', 'shocks_experienced'
+        ],
+        include: [{
+          model: Citizen,
+          include: [Location]
+        }],
+        order: [['submitted_at', 'DESC']]
+      });
+
+      let prediction = 'Stable Trend';
+      let predictionText = 'AI model confidence is low with the current sample; continue monitoring daily reports.';
+      let predictionConfidence = null;
+
+      try {
+        const aiPrediction = await aiPredictionService.predictRisk({
+          citizen: latestResponse?.Citizen || null,
+          location: latestResponse?.Citizen?.Location || null,
+          meals_per_day: avgMealsPerDay || latestResponse?.meals_per_day || 2,
+          days_of_food_left: avgDaysOfFood || latestResponse?.days_of_food_left || 3,
+          food_change_type: latestResponse?.food_change_type || 'none',
+          shocks_experienced: latestResponse?.shocks_experienced || []
+        });
+        predictionConfidence = aiPrediction.confidence;
+        prediction = this.toPredictionLabel(aiPrediction.risk_level);
+        predictionText = this.buildPredictionText(aiPrediction.risk_level, aiPrediction.confidence);
+      } catch (error) {
+        // Keep fallback insight message when AI service is unavailable.
+      }
+
+      const insights = {
+        totalHouseholds,
+        avgMealsPerDay,
+        criticalAlerts,
+        prediction,
+        predictionText,
+        predictionConfidence
+      };
 
       return insights;
     } catch (error) {
@@ -434,6 +495,34 @@ const reportService = {
     }
   },
 
+  toPredictionLabel(riskLevel) {
+    switch (riskLevel) {
+      case 'low': return 'Improving Trend';
+      case 'medium': return 'Watch Closely';
+      case 'high': return 'Risk Increasing';
+      case 'critical': return 'Immediate Intervention Needed';
+      default: return 'Stable Trend';
+    }
+  },
+
+  buildPredictionText(riskLevel, confidence) {
+    const confidenceText = typeof confidence === 'number'
+      ? ` Confidence: ${(confidence * 100).toFixed(0)}%.`
+      : '';
+    switch (riskLevel) {
+      case 'critical':
+        return `AI signals severe food insecurity in current patterns. Prioritize rapid response and outreach.${confidenceText}`;
+      case 'high':
+        return `AI indicates worsening household risk across current reports. Escalate monitoring and support interventions.${confidenceText}`;
+      case 'medium':
+        return `AI identifies emerging risk signals. Increase follow-up frequency in affected communities.${confidenceText}`;
+      case 'low':
+        return `AI indicates generally stable conditions. Maintain routine monitoring and prevention measures.${confidenceText}`;
+      default:
+        return `Current trends look stable, but continue collecting frequent reports.${confidenceText}`;
+    }
+  },
+
   calculateTrend(response) {
     // Simplified trend calculation - in real implementation, compare with historical data
     const random = Math.random();
@@ -499,6 +588,7 @@ const reportService = {
       'Days of Food Left',
       'Food Change Type',
       'Shocks Experienced',
+      'AI Confidence',
       'Risk Level',
       'Status'
     ];
@@ -523,6 +613,7 @@ const reportService = {
         response.survey.daysOfFoodLeft || 'N/A',
         `"${response.survey.foodChangeType || 'None'}"`,
         shocks,
+        typeof response.survey.confidence === 'number' ? response.survey.confidence.toFixed(4) : '',
         response.survey.riskLevel || 'Unknown',
         response.survey.status || 'Unknown'
       ].join(',');
@@ -530,6 +621,7 @@ const reportService = {
     
     // Add summary header
     const summary = [
+      '',
       '',
       '',
       '',
@@ -557,6 +649,7 @@ const reportService = {
       `Stable: ${locationData.summary.stable}`,
       `Avg Meals/Day: ${locationData.summary.avgMealsPerDay}`,
       `Avg Days of Food: ${locationData.summary.avgDaysOfFoodLeft}`,
+      '',
       '',
       '',
       '',

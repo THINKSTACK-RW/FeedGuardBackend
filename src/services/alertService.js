@@ -13,6 +13,11 @@ const alertService = {
           model: Citizen,
           include: [{
             model: Response,
+            attributes: [
+              'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+              'food_security_score', 'risk_level', 'meals_per_day', 
+              'days_of_food_left', 'food_change_type', 'shocks_experienced'
+            ],
             where: { risk_level: 'critical' },
             required: false
           }]

@@ -1,7 +1,48 @@
 const { Response, Citizen, Location, Survey } = require('../models');
 const { v4: uuidv4 } = require('uuid');
+const aiPredictionService = require('../services/aiPredictionService');
 
 const foodReportController = {
+  // Preview AI risk prediction before report submission
+  async predictFoodRisk(req, res) {
+    try {
+      const {
+        citizen_id,
+        meals_per_day,
+        days_of_food_left,
+        food_change_type,
+        shocks_experienced = []
+      } = req.body;
+
+      if (meals_per_day === undefined || days_of_food_left === undefined || !food_change_type) {
+        return res.status(400).json({
+          error: 'Missing required fields: meals_per_day, days_of_food_left, food_change_type'
+        });
+      }
+
+      let citizen = null;
+      let location = null;
+      if (citizen_id) {
+        citizen = await Citizen.findByPk(citizen_id, { include: [Location] });
+        location = citizen?.Location || null;
+      }
+
+      const aiInput = {
+        citizen,
+        location,
+        meals_per_day,
+        days_of_food_left,
+        food_change_type,
+        shocks_experienced
+      };
+
+      const prediction = await aiPredictionService.predictRisk(aiInput);
+      res.json(prediction);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
   // Submit a new food report from mobile app
   async submitFoodReport(req, res) {
     try {
@@ -22,7 +63,7 @@ const foodReportController = {
       }
 
       // Check if citizen exists, create if not (for mobile app users)
-      let citizen = await Citizen.findByPk(citizen_id);
+      let citizen = await Citizen.findByPk(citizen_id, { include: [Location] });
       if (!citizen) {
         // Create a basic citizen record for mobile app users with default location
         const defaultLocation = await Location.findOne({ where: { name: 'Default Location' } }) ||
@@ -44,15 +85,36 @@ const foodReportController = {
           location_id: defaultLocation.id, // Always required
           created_at: new Date()
         });
+        citizen = await Citizen.findByPk(citizen_id, { include: [Location] });
       }
 
-      // Calculate food security score and risk level
-      const { food_security_score, risk_level } = calculateFoodSecurityMetrics({
+      // Calculate baseline food security score
+      const { food_security_score, risk_level: fallbackRiskLevel } = calculateFoodSecurityMetrics({
         meals_per_day,
         days_of_food_left,
         food_change_type,
         shocks_experienced
       });
+
+      // Use rule-based prediction only (AI prediction disabled due to timeout issues)
+      let risk_level = fallbackRiskLevel;
+      let prediction_source = 'rules';
+      
+      // Temporarily disabled AI prediction
+      // try {
+      //   const prediction = await aiPredictionService.predictRisk({
+      //     citizen,
+      //     location: citizen?.Location || null,
+      //     meals_per_day,
+      //     days_of_food_left,
+      //     food_change_type,
+      //     shocks_experienced
+      //   });
+      //   risk_level = prediction.risk_level;
+      //   prediction_source = prediction.source;
+      // } catch (predictionError) {
+      //   console.warn('AI prediction unavailable, using fallback rules:', predictionError.message);
+      // }
 
       // Create response record
       const response = await Response.create({
@@ -66,6 +128,7 @@ const foodReportController = {
         shocks_experienced,
         food_security_score,
         risk_level,
+        // ai_confidence, // Commented out - column doesn't exist in database
         submitted_at: new Date()
       });
 
@@ -75,6 +138,8 @@ const foodReportController = {
           id: response.id,
           food_security_score,
           risk_level,
+          confidence: null, // AI confidence not available due to missing column
+          prediction_source,
           submitted_at: response.submitted_at
         }
       });
@@ -95,6 +160,11 @@ const foodReportController = {
 
       const responses = await Response.findAll({
         where: { citizen_id },
+        attributes: [
+          'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+          'food_security_score', 'risk_level', 'meals_per_day', 
+          'days_of_food_left', 'food_change_type', 'shocks_experienced'
+        ],
         order: [['submitted_at', 'DESC']],
         limit: 50
       });
@@ -108,7 +178,8 @@ const foodReportController = {
         food_change_type: response.food_change_type,
         shocks_experienced: response.shocks_experienced,
         risk_level: response.risk_level,
-        food_security_score: response.food_security_score
+        food_security_score: response.food_security_score,
+        ai_confidence: null // Column doesn't exist in database
       }));
 
       res.json(reports);
@@ -129,6 +200,11 @@ const foodReportController = {
 
       const responses = await Response.findAll({
         where: whereClause,
+        attributes: [
+          'id', 'survey_id', 'citizen_id', 'channel', 'submitted_at',
+          'food_security_score', 'risk_level', 'meals_per_day', 
+          'days_of_food_left', 'food_change_type', 'shocks_experienced'
+        ],
         include: [{
           model: Citizen,
           include: [Location]

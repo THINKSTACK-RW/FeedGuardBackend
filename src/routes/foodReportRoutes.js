@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const foodReportController = require('../controllers/foodReportController');
 
+// POST /api/food-reports/predict - Predict risk from incoming data
+router.post('/predict', foodReportController.predictFoodRisk);
+
 // POST /api/food-reports - Submit a new food report from mobile app
 router.post('/', foodReportController.submitFoodReport);
 
