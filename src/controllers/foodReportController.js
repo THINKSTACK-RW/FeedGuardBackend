@@ -1,7 +1,6 @@
 const { Response, Citizen, Location, Sequelize } = require('../models');
 const { Op } = Sequelize;
 const { v4: uuidv4 } = require('uuid');
-<<<<<<< HEAD
 const aiPredictionService = require('../services/aiPredictionService');
 
 const foodReportController = {
@@ -46,12 +45,6 @@ const foodReportController = {
   },
 
   // Submit a new food report from mobile app
-=======
-const PredictionService = require('../services/PredictionService');
-
-const foodReportController = {
-  // Submit a new food report with ML prediction
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
   async submitFoodReport(req, res) {
     console.log('--- FeedGuard JS Controller: submitFoodReport called ---');
     try {
