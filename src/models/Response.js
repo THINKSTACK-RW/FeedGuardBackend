@@ -45,6 +45,34 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
       comment: "Array of shocks experienced (income, drought, flood, illness, other)",
     },
+    income_level: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    farm_size: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    livestock_ownership: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    crop_yield: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    market_access: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    food_prices_index: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    rainfall_mm: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
   }, {
     tableName: "responses",
     timestamps: false,

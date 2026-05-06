@@ -1,0 +1,7 @@
+Testing Prediction Service with sample data...
+Prediction failed: Error: y contains previously unseen labels: 'None'
+    at ChildProcess.<anonymous> (D:\LECTURES\MY CODES\javascript\ThinkStack\Food Guard\Backend\src\services\PredictionService.ts:53:22)
+    at ChildProcess.emit (node:events:507:28)
+    at ChildProcess.emit (node:domain:489:12)
+    at maybeClose (node:internal/child_process:1101:16)
+    at Process.ChildProcess._handle.onexit (node:internal/child_process:305:5)
