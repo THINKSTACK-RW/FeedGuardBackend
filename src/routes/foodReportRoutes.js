@@ -1,5 +1,6 @@
 const express = require('express');
 const foodReportController = require('../controllers/foodReportController');
+const router = express.Router();
 
 // POST /api/food-reports/predict - Predict risk from incoming data
 router.post('/predict', foodReportController.predictFoodRisk);

@@ -1,34 +1,40 @@
 const { Sequelize } = require("sequelize");
 
-// Use DATABASE_URL for Render deployment
-const databaseUrl = process.env.DATABASE_URL;
+// Use SQLite for Render deployment (can be switched to PostgreSQL later)
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: process.env.NODE_ENV === 'production' ? '/tmp/database.sqlite' : './database.sqlite',
+  logging: false
+});
 
-const sequelize = databaseUrl 
-  ? new Sequelize(databaseUrl, {
-      logging: false,
-      dialect: 'postgres',
-      ssl: {
-        require: true,
-        rejectUnauthorized: false
-      }
-    })
-  : new Sequelize(
-      process.env.DB_NAME,
-      process.env.DB_USER,
-      process.env.DB_PASSWORD,
-      {
-        host: process.env.DB_HOST,
-        dialect: "postgres",
-        port: 5432,
-        logging: false,
-        dialectOptions: {
-          ssl: {
-            require: true,
-            rejectUnauthorized: false
-          }
-        }
-      }
-    );
+// Original PostgreSQL configuration (commented out due to network timeout)
+// const databaseUrl = process.env.DATABASE_URL;
+// const sequelize = databaseUrl 
+//   ? new Sequelize(databaseUrl, {
+//       logging: false,
+//       dialect: 'postgres',
+//       ssl: {
+//         require: true,
+//         rejectUnauthorized: false
+//       }
+//     })
+//   : new Sequelize(
+//       process.env.DB_NAME,
+//       process.env.DB_USER,
+//       process.env.DB_PASSWORD,
+//       {
+//         host: process.env.DB_HOST,
+//         dialect: "postgres",
+//         port: 5432,
+//         logging: false,
+//         dialectOptions: {
+//           ssl: {
+//             require: true,
+//             rejectUnauthorized: false
+//           }
+//         }
+//       }
+//     );
 
 const db = {};
 

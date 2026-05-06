@@ -69,11 +69,7 @@ const foodReportController = {
         return res.status(400).json({ error: 'Missing core reporting fields' });
       }
 
-<<<<<<< HEAD
       // Check if citizen exists, create if not (for mobile app users)
-=======
-      // Fetch or Create Citizen
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
       let citizen = await Citizen.findByPk(citizen_id, { include: [Location] });
       if (!citizen) {
         // Create a basic citizen record for mobile app users with default location
@@ -98,36 +94,17 @@ const foodReportController = {
           location_id: defaultLocation.id,
           created_at: new Date()
         });
-<<<<<<< HEAD
         citizen = await Citizen.findByPk(citizen_id, { include: [Location] });
       }
 
       // Calculate baseline food security score
       const { food_security_score, risk_level: fallbackRiskLevel } = calculateFoodSecurityMetrics({
-=======
-        // Refetch to get includes
-        citizen = await Citizen.findByPk(citizen_id, { include: [Location] });
-      }
-
-      // Prepare data for ML model
-      const mlParams = {
-        household_size: parseInt(citizen.household_size) || 5,
-        income_level,
-        farm_size,
-        livestock_ownership,
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
         meals_per_day,
         days_of_food_left,
         food_change_type,
-        shocks_experienced: Array.isArray(shocks_experienced) ? shocks_experienced[0] || 'No Shock' : 'No Shock',
-        market_access,
-        food_prices_index,
-        rainfall_mm,
-        region: citizen.Location ? citizen.Location.province || 'Kigali' : 'Kigali',
-        crop_yield
-      };
+        shocks_experienced
+      });
 
-<<<<<<< HEAD
       // Use rule-based prediction only (AI prediction disabled due to timeout issues)
       let risk_level = fallbackRiskLevel;
       let prediction_source = 'rules';
@@ -150,14 +127,6 @@ const foodReportController = {
 
       // Create response record
       const response = await Response.create({
-=======
-      // Get ML Prediction
-      console.log('Requesting ML prediction for citizen:', citizen_id);
-      const prediction = await PredictionService.predictRisk(mlParams);
-
-      // Save Report to Database
-      const report = await Response.create({
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
         id: uuidv4(),
         citizen_id,
         channel,
@@ -165,7 +134,6 @@ const foodReportController = {
         days_of_food_left,
         food_change_type,
         shocks_experienced,
-<<<<<<< HEAD
         food_security_score,
         risk_level,
         // ai_confidence, // Commented out - column doesn't exist in database
@@ -181,17 +149,7 @@ const foodReportController = {
           confidence: null, // AI confidence not available due to missing column
           prediction_source,
           submitted_at: response.submitted_at
-=======
-        income_level,
-        farm_size,
-        livestock_ownership,
-        crop_yield,
-        market_access,
-        food_prices_index,
-        rainfall_mm,
-        risk_level: prediction.risk_level,
-        food_security_score: Math.round(prediction.confidence * 100),
-        submitted_at: new Date()
+        }
       });
 
       // If critical, trigger alert generation
@@ -202,7 +160,6 @@ const foodReportController = {
           console.log('--- Critical Report: Alert system triggered ---');
         } catch (alertError) {
           console.error('Failed to trigger alert system:', alertError);
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
         }
       }
 
@@ -250,8 +207,7 @@ const foodReportController = {
         limit: 50
       });
 
-<<<<<<< HEAD
-      const reports = responses.map(response => ({
+const reports = responses.map(response => ({
         id: response.id,
         date: response.submitted_at.toISOString().split('T')[0],
         time: response.submitted_at.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
@@ -262,20 +218,9 @@ const foodReportController = {
         risk_level: response.risk_level,
         food_security_score: response.food_security_score,
         ai_confidence: null // Column doesn't exist in database
-=======
-      const formatted = responses.map(r => ({
-        id: r.id,
-        date: r.submitted_at.toISOString().split('T')[0],
-        time: r.submitted_at.toLocaleTimeString(),
-        meals_per_day: r.meals_per_day,
-        days_of_food_left: r.days_of_food_left,
-        food_change_type: r.food_change_type,
-        risk_level: r.risk_level,
-        food_security_score: r.food_security_score
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
       }));
 
-      res.json(formatted);
+      res.json(reports);
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
@@ -284,7 +229,6 @@ const foodReportController = {
   // Get dashboard statistics
   async getFoodReportStats(req, res) {
     try {
-<<<<<<< HEAD
       const { region_id } = req.query;
       
       const whereClause = {};
@@ -303,12 +247,12 @@ const foodReportController = {
           model: Citizen,
           include: [Location]
         }]
-=======
+      });
+
       const totalCount = await Response.count();
       const riskLevels = await Response.findAll({
         attributes: ['risk_level', [Sequelize.fn('COUNT', Sequelize.col('risk_level')), 'count']],
         group: ['risk_level']
->>>>>>> b5c7b78d9000059044ac8c238f6d553193db85c3
       });
 
       const stats = {
